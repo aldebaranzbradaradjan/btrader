@@ -1,4 +1,4 @@
-use crate::config::Configuration;
+/*use crate::config::Configuration;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -48,4 +48,4 @@ async fn bot_main(
       api.spawn(chat.text(message));
     }
   }
-}
+}*/
