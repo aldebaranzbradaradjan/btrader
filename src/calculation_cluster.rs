@@ -1,4 +1,4 @@
-use crate::config;
+//use crate::config;
 use crate::config::Configuration;
 use crate::depth_cache::DepthCache;
 //use crate::telegram::TelegramBot;
@@ -8,7 +8,7 @@ use binance::account::*;
 use binance::api::*;
 use binance::model::*;
 use console::style;
-use std::thread;
+//use std::thread;
 // use rayon::prelude::*;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -39,7 +39,7 @@ impl CalculationCluster {
   ) -> CalculationCluster {
     let config_clone = config.clone();
     let account: Account = Binance::new(Some(config_clone.api_key), Some(config_clone.api_secret));
-    let config_clone = config.clone();
+    //let config_clone = config.clone();
     //let bot: TelegramBot = TelegramBot::new(config_clone);
     // if config.telegram_enabled {
     //   bot.start();
@@ -421,6 +421,7 @@ impl Deal {
   }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 struct Action {
   pair: TradingPair,

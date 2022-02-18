@@ -22,6 +22,7 @@ pub struct LocalOrderBook {
     pub asks: Vec<Asks>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct DepthCache {
     map: Arc<RwLock<HashMap<String, LocalOrderBook>>>,
@@ -165,7 +166,7 @@ impl DepthCache {
 }
 
 fn get_snapshot(market: &Market, symbol: &str) -> OrderBook {
-    thread::sleep(time::Duration::from_millis(150));
+    //thread::sleep(time::Duration::from_millis(150));
     match market.get_depth(format!("{}&limit=100", symbol)) {
         Ok(answer) => answer,
         Err(_e) => {
