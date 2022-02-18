@@ -22,6 +22,9 @@ pub struct Configuration {
   pub telegram_enabled: bool,
   pub telegram_token: String,
   pub telegram_user_id: i64,
+  pub discord_enabled: bool,
+  pub discord_token: String,
+  pub discord_channel_id: u64
 }
 
 impl fmt::Display for Configuration {
