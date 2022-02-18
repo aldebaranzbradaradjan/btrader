@@ -16,7 +16,5 @@ mod config_tests {
     assert_eq!(cfg.trading_profit_threshold, 0.15);
     assert_eq!(cfg.trading_age_threshold, 100);
     assert_eq!(cfg.depth_size, 20);
-    assert_eq!(cfg.telegram_token, "your-telegram-bot-token");
-    assert_eq!(cfg.telegram_user_id, 0);
   }
 }

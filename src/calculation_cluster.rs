@@ -1,3 +1,4 @@
+use crate::config;
 use crate::config::Configuration;
 use crate::depth_cache::DepthCache;
 //use crate::telegram::TelegramBot;
@@ -16,10 +17,7 @@ use serenity::{
   model::{id::ChannelId}, http::{Http},
 };
 
-const DISCORD_TOKEN: &str = "OTQ0MTYzNTIwMTY4MjAyMjgx.Yg9mzA.WE9_ofdgn50uOXVeunvfImYh_h8";
-const CHANNEL_BTC_ID: ChannelId = ChannelId(920647261942321173);
-
-pub async fn send_message_to_channel(channel_id:ChannelId, token:String, message:String){
+pub(crate) async fn send_message_to_channel(channel_id:ChannelId, token:String, message:String){
 
   let http = Http::new_with_token(&token);
   channel_id.say(&http, message).await.expect("Error sending message to channel");
@@ -68,25 +66,27 @@ impl CalculationCluster {
         if (deal.get_profit() >= (self.config.trading_profit_threshold / 100.0))
           && ((self.get_epoch_ms() - deal.get_timestamp()) <= self.config.trading_age_threshold)
         {
-          let tmp_deal = deal.clone();
+          let tmp_conf = self.config.clone();
+          
+          if tmp_conf.discord_enabled{
+            let tmp_deal = deal.clone();
+            send_message_to_channel(
+              ChannelId(tmp_conf.discord_channel_id), 
+              tmp_conf.discord_token.to_string(), 
+              format!(
+                "[{:+.3}%] Deal: {:?}...",
+                tmp_deal.get_profit() * 100.0,
+                tmp_deal.get_actions()
+              )).await;
+            }
 
-          send_message_to_channel(
-            CHANNEL_BTC_ID, 
-            DISCORD_TOKEN.to_string(), 
-            format!(
-              "[{:+.3}%] Deal: {:?}...",
-              tmp_deal.get_profit() * 100.0,
-              tmp_deal.get_actions()
-            )
-          ).await;
-
-          // println!(
-          //   "[{}] Deal: {:?}...",
-          //   style(format!("{:+.3}%", deal.get_profit() * 100.0))
-          //     .bold()
-          //     .dim(),
-          //   deal.get_actions()
-          // );
+          println!(
+            "[{}] Deal: {:?}...",
+            style(format!("{:+.3}%", deal.get_profit() * 100.0))
+              .bold()
+              .dim(),
+            deal.get_actions()
+          );
 
           // Cycle: [BUY>BUY>SELL] | [BNB>BTC>DOT]
           // Date: 01/12/2021 - 11h42
