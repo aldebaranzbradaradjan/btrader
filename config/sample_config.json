@@ -17,5 +17,9 @@
 
   "telegram_enabled" : false,
   "telegram_token" : "your-telegram-bot-token",
-  "telegram_user_id" : 0
+  "telegram_user_id" : 0,
+
+  "discord_enabled": false,
+  "discord_token": "Discord-token",
+  "discord_channel_id": 0
 }
