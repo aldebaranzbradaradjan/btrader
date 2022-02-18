@@ -7,10 +7,23 @@ use binance::account::*;
 use binance::api::*;
 use binance::model::*;
 use console::style;
+use std::thread;
 // use rayon::prelude::*;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use serenity::{
+  model::{id::ChannelId}, http::{Http},
+};
+
+const DISCORD_TOKEN: &str = "OTQ0MTYzNTIwMTY4MjAyMjgx.Yg9mzA.VMDjir_XrhB_mI_qVev2l7QQALg";
+const CHANNEL_BTC_ID: ChannelId = ChannelId(920647261942321173);
+
+pub async fn send_message_to_channel(channel_id:ChannelId,token:String,message:String){
+
+  let http = Http::new_with_token(&token);
+  channel_id.say(&http, message).await.expect("Error sending message to channel");
+}
 pub struct CalculationCluster {
   relationships: HashMap<String, TriangularRelationship>,
   depth_cache: DepthCache,
@@ -40,7 +53,7 @@ impl CalculationCluster {
       bot,
     }
   }
-  pub fn start(&self) {
+  pub async fn start(&self) {
     let mut execution_count = 0;
     let relationships = self.relationships.clone();
     let relationships_names: Vec<String> = self.relationships.keys().cloned().collect();
@@ -53,13 +66,24 @@ impl CalculationCluster {
         if (deal.get_profit() >= (self.config.trading_profit_threshold / 100.0))
           && ((self.get_epoch_ms() - deal.get_timestamp()) <= self.config.trading_age_threshold)
         {
-          println!(
-            "[{}] Deal: {:?}...",
-            style(format!("{:+.3}%", deal.get_profit() * 100.0))
-              .bold()
-              .dim(),
-            deal.get_actions()
-          );
+          let tmp_deal = deal.clone();
+
+          thread::spawn(move || send_message_to_channel(
+            CHANNEL_BTC_ID, 
+            DISCORD_TOKEN.to_string(), 
+            format!(
+              "[{:+.3}%] Deal: {:?}...",
+              tmp_deal.get_profit() * 100.0,
+              tmp_deal.get_actions()
+            )));
+
+          // println!(
+          //   "[{}] Deal: {:?}...",
+          //   style(format!("{:+.3}%", deal.get_profit() * 100.0))
+          //     .bold()
+          //     .dim(),
+          //   deal.get_actions()
+          // );
 
           // Cycle: [BUY>BUY>SELL] | [BNB>BTC>DOT]
           // Date: 01/12/2021 - 11h42
@@ -72,13 +96,13 @@ impl CalculationCluster {
           // Profit: +/-XX BNB ( monnaie de départ) | +/-XX,xxxx %
           // Frais: 0,xxxx BNB > Reste XX,xxxx BNB
 
-          if self.config.telegram_enabled {
-            self.bot.send_message(format!(
-              "[{:+.3}%] Deal: {:?}...",
-              deal.get_profit() * 100.0,
-              deal.get_actions()
-            ));
-          }
+          // if self.config.telegram_enabled {
+          //   self.bot.send_message(format!(
+          //     "[{:+.3}%] Deal: {:?}...",
+          //     deal.get_profit() * 100.0,
+          //     deal.get_actions()
+          //   ));
+          // }
           if self.config.trading_enabled {
             self.execute_deal(deal);
             self.bot.send_message("Deal executed.".to_string());
