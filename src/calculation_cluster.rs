@@ -61,6 +61,7 @@ impl CalculationCluster {
             deal.get_actions()
           );
 
+          // TODO
           // Cycle: [BUY>BUY>SELL] | [BNB>BTC>DOT]
           // Date: 01/12/2021 - 11h42
           // Capital engagé: XX BNB ( ou BTC, USDT en fonction de la monnaie )
