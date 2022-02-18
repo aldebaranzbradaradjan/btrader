@@ -16,13 +16,14 @@ use serenity::{
   model::{id::ChannelId}, http::{Http},
 };
 
-const DISCORD_TOKEN: &str = "OTQ0MTYzNTIwMTY4MjAyMjgx.Yg9mzA.VMDjir_XrhB_mI_qVev2l7QQALg";
+const DISCORD_TOKEN: &str = "OTQ0MTYzNTIwMTY4MjAyMjgx.Yg9mzA.WE9_ofdgn50uOXVeunvfImYh_h8";
 const CHANNEL_BTC_ID: ChannelId = ChannelId(920647261942321173);
 
-pub async fn send_message_to_channel(channel_id:ChannelId,token:String,message:String){
+pub async fn send_message_to_channel(channel_id:ChannelId, token:String, message:String){
 
   let http = Http::new_with_token(&token);
   channel_id.say(&http, message).await.expect("Error sending message to channel");
+  //println!("send")
 }
 pub struct CalculationCluster {
   relationships: HashMap<String, TriangularRelationship>,
@@ -60,22 +61,24 @@ impl CalculationCluster {
     while execution_count < self.config.trading_execution_cap
       || self.config.trading_execution_cap == -1
     {
-      relationships_names.iter().for_each(|rel| {
+
+      for rel in &relationships_names {
         // println!("------------------------------------------------------------------------------------------------");
-        let deal = self.calculate_relationship(relationships.get(rel).unwrap().clone());
+        let deal = self.calculate_relationship(relationships.get(&rel.clone()).unwrap().clone());
         if (deal.get_profit() >= (self.config.trading_profit_threshold / 100.0))
           && ((self.get_epoch_ms() - deal.get_timestamp()) <= self.config.trading_age_threshold)
         {
           let tmp_deal = deal.clone();
 
-          thread::spawn(move || send_message_to_channel(
+          send_message_to_channel(
             CHANNEL_BTC_ID, 
             DISCORD_TOKEN.to_string(), 
             format!(
               "[{:+.3}%] Deal: {:?}...",
               tmp_deal.get_profit() * 100.0,
               tmp_deal.get_actions()
-            )));
+            )
+          ).await;
 
           // println!(
           //   "[{}] Deal: {:?}...",
@@ -119,7 +122,7 @@ impl CalculationCluster {
             }
           }
         }
-      })
+      }
     }
   }
   fn get_epoch_ms(&self) -> u64 {

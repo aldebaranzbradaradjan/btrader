@@ -154,7 +154,7 @@ impl bTrader {
     }
   }
   // Execute
-  pub fn run(&self) {
-    self.calculation_cluster.start();
+  pub async fn run(&self) {
+    self.calculation_cluster.start().await;
   }
 }

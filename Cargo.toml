@@ -20,7 +20,7 @@ indicatif = "0.15"
 console = "0.13"
 telegram-bot = "0.8"
 futures="0.3"
-tokio = { version = "0.2.23", features = ["macros", "io-util"] }
+tokio = { version = "1", features = ["full"] }
 serenity = "0.10"
 
 [lib]
