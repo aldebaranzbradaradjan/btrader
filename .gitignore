@@ -13,4 +13,5 @@ Cargo.lock
 .github/
 
 config/config.json
+config/config_btc.json
 tests/config.json

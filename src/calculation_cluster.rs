@@ -60,6 +60,18 @@ impl CalculationCluster {
               .dim(),
             deal.get_actions()
           );
+
+          // Cycle: [BUY>BUY>SELL] | [BNB>BTC>DOT]
+          // Date: 01/12/2021 - 11h42
+          // Capital engagé: XX BNB ( ou BTC, USDT en fonction de la monnaie )
+                                                  
+          // BNBBTC  BUY | Quantité = 0.14200000000000002 | Price =
+          // DOTBNB  BUY | Quantité =  3.15 | Price =
+          // DOTBTC SELL | Quantité =  3.15 | Price =
+                                                  
+          // Profit: +/-XX BNB ( monnaie de départ) | +/-XX,xxxx %
+          // Frais: 0,xxxx BNB > Reste XX,xxxx BNB
+
           if self.config.telegram_enabled {
             self.bot.send_message(format!(
               "[{:+.3}%] Deal: {:?}...",
@@ -119,6 +131,9 @@ impl CalculationCluster {
     let mut results = Deal::new();
     let mut tmp_deal: Deal;
 
+    let mut ask_price_last = 0.0;
+    let mut bid_price_last = 0.0;
+
     // Iterate over investment values
     let min_investment = (self.config.investment_min / self.config.investment_step) as i32;
     let max_investment = (self.config.investment_max / self.config.investment_step) as i32;
@@ -126,7 +141,7 @@ impl CalculationCluster {
       let true_investment = investment as f64 * self.config.investment_step;
       current_quantity = true_investment;
       // println!("-----------------------------------------");
-      // println!("Initial: {}BTC", current_quantity);
+      //println!("Initial: {}", current_quantity);
       tmp_deal = Deal::new();
       for (j, pair_name) in pair_names.iter().enumerate() {
         let depth_book = self.depth_cache.get_depth(&pair_name);
@@ -145,10 +160,12 @@ impl CalculationCluster {
             //   "{} Order book: Price={} TotalQty={}",
             //   pair_name, ask.price, ask.qty
             // );
+
             tmp_quantity = self.correct_quantity(helper_quantity / ask.price, pairs[j].get_step());
             // println!("HelperQty={}, TmpQty={}", helper_quantity, tmp_quantity);
             if ask.qty >= tmp_quantity {
               current_quantity += tmp_quantity;
+              ask_price_last = ask.price;
             // println!("Buying quota");
             // println!(
             //   "Trade #{}: {} {} for {} {} (price: {})",
@@ -163,6 +180,7 @@ impl CalculationCluster {
             } else {
               tmp_quantity = self.correct_quantity(ask.qty, pairs[j].get_step());
               current_quantity += tmp_quantity;
+              ask_price_last = ask.price;
               // println!("Buying whole thing");
               // println!(
               //   "Trade #{}: {} {} for {} {} (price: {})",
@@ -180,13 +198,14 @@ impl CalculationCluster {
               break;
             }
           }
-          tmp_deal.add_action(pairs[j].clone(), pair_actions[j].clone(), current_quantity)
+          tmp_deal.add_action(pairs[j].clone(), pair_actions[j].clone(), current_quantity, ask_price_last)
         } else {
           // Selling means multiplying by the price
           tmp_deal.add_action(
             pairs[j].clone(),
             pair_actions[j].clone(),
             self.correct_quantity(helper_quantity, pairs[j].get_step()),
+            bid_price_last,
           );
           let prices = depth_book.bids;
           for bid in prices.iter() {
@@ -197,6 +216,7 @@ impl CalculationCluster {
             if bid.qty >= helper_quantity {
               current_quantity +=
                 self.correct_quantity(helper_quantity, pairs[j].get_step()) * bid.price;
+                bid_price_last = bid.price;
             // println!("Selling quota");
             // println!(
             //   "Trade #{}: {} {} for {} {} (price: {})",
@@ -210,6 +230,7 @@ impl CalculationCluster {
             // println!("--")
             } else {
               current_quantity += self.correct_quantity(bid.qty, pairs[j].get_step()) * bid.price;
+              bid_price_last = bid.price;
               // println!("Selling whole thing");
               // println!(
               //   "Trade #{}: {} {} for {} {} (price: {})",
@@ -249,6 +270,7 @@ impl CalculationCluster {
       //   }
       // }
     }
+
     results.set_profit(best_profit);
     results.set_timestamp(lowest_timestamp);
     results
@@ -352,8 +374,8 @@ impl Deal {
       actions: Vec::new(),
     }
   }
-  pub fn add_action(&mut self, pair: TradingPair, action: String, quantity: f64) {
-    self.actions.push(Action::new(pair, action, quantity))
+  pub fn add_action(&mut self, pair: TradingPair, action: String, quantity: f64, last_price: f64) {
+    self.actions.push(Action::new(pair, action, quantity, last_price))
   }
   pub fn get_actions(&self) -> Vec<Action> {
     self.actions.clone()
@@ -377,14 +399,16 @@ struct Action {
   pair: TradingPair,
   action: String,
   quantity: f64,
+  last_price: f64
 }
 
 impl Action {
-  pub fn new(pair: TradingPair, action: String, quantity: f64) -> Action {
+  pub fn new(pair: TradingPair, action: String, quantity: f64, last_price: f64) -> Action {
     Action {
       pair,
       action,
       quantity,
+      last_price
     }
   }
   pub fn get_pair(&self) -> TradingPair {
