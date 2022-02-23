@@ -13,6 +13,7 @@ pub struct Configuration {
     pub investment_min: f64,
     pub investment_max: f64,
     pub investment_step: f64,
+    pub excluded_currencies : Vec<String>,
     pub trading_enabled: bool,
     pub trading_execution_cap: i32,
     pub trading_taker_fee: f64,
