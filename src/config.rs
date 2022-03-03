@@ -22,6 +22,7 @@ pub struct Configuration {
     pub discord_enabled: bool,
     pub discord_token: String,
     pub discord_channel_id: u64,
+    pub filter_pair: Vec<String>,
 }
 
 impl fmt::Display for Configuration {

@@ -42,6 +42,7 @@ impl bTrader {
         };
 
         // TODO filter symbols we don't care ?
+
         for symbol in &result.symbols {
             // Checks if symbol is currently trading
             if symbol.status == "TRADING" {
@@ -57,12 +58,24 @@ impl bTrader {
                         step = step_size.parse().unwrap()
                     };
                 }
-                pairs.push(TradingPair::new(
-                    symbol.symbol.to_string(),
-                    symbol.base_asset.to_string(),
-                    symbol.quote_asset.to_string(),
-                    step,
-                ));
+
+                let mut add_pair = true;
+                for filtered_currency in &config.filter_pair {
+                    if symbol.base_asset.to_string() == filtered_currency.to_owned()
+                        || symbol.quote_asset.to_string() == filtered_currency.to_owned()
+                    {
+                        add_pair = false;
+                    }
+                }
+
+                if add_pair {
+                    pairs.push(TradingPair::new(
+                        symbol.symbol.to_string(),
+                        symbol.base_asset.to_string(),
+                        symbol.quote_asset.to_string(),
+                        step,
+                    ));
+                }
             }
         }
         println!(" {} symbols found!", pairs.len());
