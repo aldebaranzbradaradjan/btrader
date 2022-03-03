@@ -15,3 +15,6 @@ Cargo.lock
 config/config.json
 config/config_btc.json
 tests/config.json
+
+#MacOS files
+*.DS_Store
