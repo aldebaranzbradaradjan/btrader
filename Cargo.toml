@@ -13,6 +13,7 @@ keywords=["bot", "algotrading", "cryptocurrencies", "binance", "arbitrage"]
 
 [dependencies]
 binance = "0.18.2"
+#binance = { path = "/run/media/florian/SSD Data/Work/Rust/binance-rs" }
 serde = { version = "1.0.136" }
 serde_json = { version = "1.0.79" }
 rayon = "1.5.1"

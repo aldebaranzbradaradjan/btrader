@@ -40,6 +40,8 @@ impl bTrader {
             Ok(answer) => answer,
             Err(e) => panic!("Error on getting exchange info: {}", e),
         };
+
+        // TODO filter symbols we don't care ?
         for symbol in &result.symbols {
             // Checks if symbol is currently trading
             if symbol.status == "TRADING" {

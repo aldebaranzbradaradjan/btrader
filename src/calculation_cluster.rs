@@ -376,6 +376,16 @@ impl CalculationCluster {
                 }
             }
         }
+
+        if self.config.discord_enabled {
+            self.bot.send_message(
+                format!(
+                    "[{}] Successfully executed deal!",
+                    style("INFO").bold().dim()
+                ),
+            );
+        }
+
         println!(
             "[{}] Successfully executed deal!",
             style("INFO").bold().dim(),

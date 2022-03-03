@@ -50,7 +50,6 @@ async fn bot_main(
       channel
         .say(&client, message)
         .await ?;
-      //api.spawn(chat.text(message));
     }
   }
 }
